@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
-
 import 'bloc/permission_bloc.dart';
 
 class HasPermissionBuilder extends StatelessWidget {
@@ -16,9 +15,16 @@ class HasPermissionBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PermissionBloc, PermissionState>(
-      builder: (context, state) {
-        return builder(state.hasPermission(permission));
+    return FutureBuilder<bool>(
+      future: context.read<PermissionBloc>().hasPermission(permission),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        }
+        return builder(snapshot.data ?? false);
       },
     );
   }

@@ -18,9 +18,17 @@ class PermissionAwareWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PermissionBloc, PermissionState>(
-      builder: (context, state) {
-        if (state.hasPermission(permission)) {
+    return FutureBuilder<bool>(
+      future: context.read<PermissionBloc>().hasPermission(permission),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        }
+
+        if (snapshot.data ?? false) {
           return granted;
         }
 
